@@ -1,0 +1,14 @@
+import pygame 
+from pygame.sprite import Sprite
+class Grenade(Sprite):
+    def __init__(self, x, y, direction, screen):
+        super(Grenade, self).__init__()
+        self.timer = 100
+        self.vel_y = -11
+
+        self.speed = 7
+        self.image  = pygame.image.load('images/icons/grenade.png').convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.direction = direction
+        self.screen = screen
