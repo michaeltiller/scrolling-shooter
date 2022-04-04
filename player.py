@@ -7,7 +7,7 @@ import os
 
 
 class Soldier(Sprite):
-    def __init__(self, char_type, x, y, scale, speed, screen, ai_settings, ammo):
+    def __init__(self, char_type, x, y, scale, speed, screen, ai_settings, ammo, grenades):
         super(Soldier, self).__init__()
         self.alive = True 
         self.char_type = char_type
@@ -15,6 +15,7 @@ class Soldier(Sprite):
         self.ammo = ammo
         self.start_ammo = ammo 
         self.shoot_cooldown = 0
+        self.grenades = grenades
         self.health = 100
         self.max_health = self.health
         self.direction = 1
@@ -28,6 +29,8 @@ class Soldier(Sprite):
         self.ai_settings = ai_settings
         self.update_time = pygame.time.get_ticks()
         self.bullet_group = Group()
+        self.grenade_group = Group()
+        self.explosion_group = Group()
         
         
         animation_types = ['idle', 'Run', 'Jump', 'Death']
@@ -49,6 +52,8 @@ class Soldier(Sprite):
         self.moving_left = False
         self.moving_right = False 
         self.shoot = False
+        self.grenade = False
+        self.grenade_thrown = False
 
 
     def update(self):

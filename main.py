@@ -17,10 +17,12 @@ def run_game():
     clock = pygame.time.Clock()
     FPS = 60
 
+    enemy_group = Group()
 
-    player = Soldier('player', 200, 200, 3,  5, screen, ai_settings, 20)
-    enemy = Soldier('enemy', 400, 200, 3, 5, screen, ai_settings, 20)
-    
+    player = Soldier('player', 200, 200, 3,  5, screen, ai_settings, 20, 5)
+    enemy = Soldier('enemy', 400, 200, 3, 5, screen, ai_settings, 20, 0)
+    enemy_group.add(enemy)
+    TILE_SIZE = 40
 
 
      
@@ -34,7 +36,7 @@ def run_game():
         player.move()
         
     
-        gf.update_screen(player, enemy)
+        gf.update_screen(player, enemy, screen, ai_settings, enemy_group, TILE_SIZE)
         
 
 run_game()
