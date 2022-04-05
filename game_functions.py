@@ -55,7 +55,7 @@ def check_events(player):
                 player.grenade = False
                 player.grenade_thrown = False
 
-def update_screen(player, enemy, screen, ai_settings, enemy_group, TILE_SIZE):
+def update_screen(player, enemy, screen, ai_settings, enemy_group, TILE_SIZE, item_box_group):
     for enemy in enemy_group:
         enemy.draw()
         enemy.update()
@@ -66,6 +66,8 @@ def update_screen(player, enemy, screen, ai_settings, enemy_group, TILE_SIZE):
     player.grenade_group.draw(screen)
     player.explosion_group.update()
     player.explosion_group.draw(screen)
+    item_box_group.update(player)
+    item_box_group.draw(screen)
 
 
     if pygame.sprite.spritecollide(player, enemy.bullet_group, False):
@@ -87,3 +89,8 @@ def update_screen(player, enemy, screen, ai_settings, enemy_group, TILE_SIZE):
     
     
     pygame.display.update()
+
+def draw_text(text, font, text_color, x, y, screen):
+    img = font.render(text, True, text_color)
+    screen.blit(img, (x, y))
+
