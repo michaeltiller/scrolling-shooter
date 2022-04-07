@@ -22,18 +22,13 @@ def run_game():
     enemy_group = Group()
     item_box_group = Group()
     
-    player = Soldier('player', 200, 200, 3,  5, screen, ai_settings, 20, 5)
+    player = Soldier('player', 200, 200, 1.65,  5, screen, ai_settings, 20, 5)
     health_bar = healthbar1.HealthBar(10, 10, player.health, player.health)
-    enemy = Soldier('enemy', 400, 200, 3, 5, screen, ai_settings, 20, 0)
+    enemy = Soldier('enemy', 400, 200, 1.65, 2, screen, ai_settings, 20, 0)
     enemy_group.add(enemy)
     TILE_SIZE = 40
 
-    item_box = itemdrops.ItemBox('Health', 100, 260, TILE_SIZE)
-    item_box_group.add(item_box)
-    item_box = itemdrops.ItemBox('Ammo', 400, 260,TILE_SIZE)
-    item_box_group.add(item_box)
-    item_box = itemdrops.ItemBox('Grenade', 500, 260, TILE_SIZE)
-    item_box_group.add(item_box)
+    gf.add_item_box(item_box_group, TILE_SIZE)
 
     font = pygame.font.SysFont('Futura', 30)
    

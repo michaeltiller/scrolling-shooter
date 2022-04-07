@@ -2,6 +2,7 @@ import pygame
 import sys
 from bullet import Bullet
 from grenade1 import Grenade
+import itemdrops
 
 def update_screen(soilder):
     soilder.draw()
@@ -59,6 +60,7 @@ def update_screen(player, enemy, screen, ai_settings, enemy_group, TILE_SIZE, it
     for enemy in enemy_group:
         enemy.draw()
         enemy.update()
+        enemy.ai(player, TILE_SIZE)
     player.draw()
     player.move_bullet()
     player.update()
@@ -94,3 +96,11 @@ def draw_text(text, font, text_color, x, y, screen):
     img = font.render(text, True, text_color)
     screen.blit(img, (x, y))
 
+def add_item_box(item_box_group, TILE_SIZE):
+
+    item_box = itemdrops.ItemBox('Health', 100, 260, TILE_SIZE)
+    item_box_group.add(item_box)
+    item_box = itemdrops.ItemBox('Ammo', 400, 260,TILE_SIZE)
+    item_box_group.add(item_box)
+    item_box = itemdrops.ItemBox('Grenade', 500, 260, TILE_SIZE)
+    item_box_group.add(item_box)

@@ -4,6 +4,7 @@ from pygame.sprite import Group
 import bullet
 import pygame
 import os
+import random
 
 
 class Soldier(Sprite):
@@ -32,7 +33,15 @@ class Soldier(Sprite):
         self.grenade_group = Group()
         self.explosion_group = Group()
         
-        
+        #ai specific
+        self.move_counter = 0 
+        self.idling = False
+        self.idling_counter = 0
+        #create a rect to see if the player is in front
+        self.vision = pygame.Rect(0, 0, 150, 20)
+
+
+
         animation_types = ['idle', 'Run', 'Jump', 'Death']
         for animation in animation_types:
             temp_list = []
@@ -98,7 +107,7 @@ class Soldier(Sprite):
     def shoot_bullet(self):
         if self.shoot_cooldown == 0 and self.ammo > 0:
             self.shoot_cooldown = 20
-            bullet1 = bullet.Bullet(self.rect.centerx + (0.6 * self.rect.size[0] * self.direction), self.rect.centery, self.direction, self.screen)
+            bullet1 = bullet.Bullet(self.rect.centerx + (0.75 * self.rect.size[0] * self.direction), self.rect.centery, self.direction, self.screen)
             self.bullet_group.add(bullet1)
             self.ammo -= 1
 
@@ -121,7 +130,7 @@ class Soldier(Sprite):
             self.frame_index = 0 
             self.update_time = pygame.time.get_ticks()
 
-
+    
     def move_bullet(self):
         for bullet in self.bullet_group:
             bullet.update(self.ai_settings)
@@ -139,3 +148,39 @@ class Soldier(Sprite):
         for bullet in self.bullet_group.sprites():
             bullet.draw_bullet()
    
+    
+    def ai(self, player, TILE_SIZE):
+        if self.alive and player.alive:
+            if self.idling == False and random.randint(1, 200) ==1:
+                self.update_action(0)
+                self.idling = True
+                self.idling_counter = 50
+
+            #check ai near the player 
+            if self.vision.colliderect(player.rect):
+                self.update_action(0)
+                self.shoot_bullet()
+                self.move_bullet()
+            else:
+
+                if self.idling == False:
+                    if self.direction == 1:
+                        self.moving_right = True 
+                    else:
+                        self.moving_right = False 
+                    self.moving_left = not self.moving_right
+                    self.move()
+                    self.update_action(1)
+                    self.move_counter += 1
+                    #update vision as the ai moves 
+                    self.vision.center = (self.rect.centerx + 75 * self.direction, self.rect.centery )
+                    
+
+                    if self.move_counter > TILE_SIZE:
+                        self.direction *= -1 
+                        self.move_counter *= -1
+                else:
+                    self.idling_counter -= 1
+                    if self.idling_counter <= 0:
+                        self.idling = False
+                        self.update_action(1)
