@@ -57,6 +57,8 @@ class Soldier(Sprite):
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
         self.screen = screen
         self.moving_left = False
         self.moving_right = False 
@@ -71,10 +73,11 @@ class Soldier(Sprite):
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1 
 
-    def move(self):
+    def move(self, world, ai_settings, water_group, exit_group):
         dx = 0 
         dy = 0
         gravity = 0.75
+        screen_scroll = 0 
         
 
 
@@ -96,13 +99,54 @@ class Soldier(Sprite):
             self.vel_y
         dy += self.vel_y
 
-        #checks collision with floor
-        if self.rect.bottom + dy > 300:
-            dy = 300 - self.rect.bottom
-            self.in_air = False
+
+        #check collision 
+        for tile in world.obstacle_list:
+           
+            if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
+                dx = 0
+                if self.char_type == 'enemy':
+                    self.direction *= -1
+                    self.move_counter = 0
+           
+            if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width, self.height):
+               
+                if self.vel_y < 0:
+                    self.vel_y = 0
+                    dy = tile[1].bottom - self.rect.top
+               
+                elif self.vel_y >= 0:
+                    self.vel_y = 0
+                    self.in_air = False
+                    dy = tile[1].top - self.rect.bottom
+
+        if pygame.sprite.spritecollide(self, water_group, False):
+            self.health = 0 
+        
+        level_complete = False
+        if pygame.sprite.spritecollide(self, exit_group, False):
+            level_complete = True 
+
+        if self.rect.bottom > ai_settings.screen_height:
+            self.health = 0 
+
+        #checks if gone off the screen
+        if self.char_type == 'player':
+            if self.rect.left + dx <0 or self.rect.right + dx > ai_settings.screen_width:
+                dx = 0
+
         
         self.rect.x += dx
         self.rect.y += dy
+
+        #does the scroll 
+        if self.char_type == 'player':
+            if (self.rect.right > ai_settings.screen_width - ai_settings.scroll_thresh and ai_settings.bg_scroll < (world.level_length * ai_settings.TILE_SIZE) - ai_settings.screen_width) \
+                or (self.rect.left < ai_settings.scroll_thresh and ai_settings.bg_scroll > abs(dx)):
+                self.rect.x -= dx 
+                screen_scroll = -dx
+                
+        return screen_scroll, level_complete
 
     def shoot_bullet(self):
         if self.shoot_cooldown == 0 and self.ammo > 0:
@@ -149,7 +193,7 @@ class Soldier(Sprite):
             bullet.draw_bullet()
    
     
-    def ai(self, player, TILE_SIZE):
+    def ai(self, player, TILE_SIZE, world, ai_settings, water_group, exit_group):
         if self.alive and player.alive:
             if self.idling == False and random.randint(1, 200) ==1:
                 self.update_action(0)
@@ -169,7 +213,7 @@ class Soldier(Sprite):
                     else:
                         self.moving_right = False 
                     self.moving_left = not self.moving_right
-                    self.move()
+                    self.move(world, ai_settings, water_group, exit_group)
                     self.update_action(1)
                     self.move_counter += 1
                     #update vision as the ai moves 
@@ -184,3 +228,5 @@ class Soldier(Sprite):
                     if self.idling_counter <= 0:
                         self.idling = False
                         self.update_action(1)
+        self.rect.x += ai_settings.screen_scroll
+            

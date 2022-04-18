@@ -15,7 +15,9 @@ class ItemBox(Sprite):
 
     
 
-    def update(self, player):
+    def update(self, player, ai_settings):
+        
+        self.rect.x += ai_settings.screen_scroll
         if pygame.sprite.collide_rect(self, player):
             if self.item_type == 'Health':
                 player.health += 25

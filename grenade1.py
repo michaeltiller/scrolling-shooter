@@ -12,9 +12,11 @@ class Grenade(Sprite):
         self.image  = pygame.image.load('images/icons/grenade.png').convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
         self.direction = direction
     
-    def update(self, ai_settings, player, enemy_group, TILE_SIZE):
+    def update(self, ai_settings, player, enemy_group, TILE_SIZE, world):
         gravity = 0.75
         self.vel_y += gravity
         dx = self.direction * self.speed
@@ -22,14 +24,24 @@ class Grenade(Sprite):
 
        
 
-        if self.rect.bottom + dy > 300:
-            dy = 300 - self.rect.bottom
-            self.speed=0
-        if self.rect.left + dx <0 or self.rect.right + dx > ai_settings.screen_width:
-            self.direction *= -1 
-            dx = self.direction * self.speed
+        for tile in world.obstacle_list:
+          
+            if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
+                self.direction *= -1
+                dx = self.direction * self.speed
+           
+            if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width, self.height):
+                self.speed = 0
+                
+                if self.vel_y < 0:
+                    self.vel_y = 0
+                    dy = tile[1].bottom - self.rect.top
+                
+                elif self.vel_y >= 0:
+                    self.vel_y = 0
+                    dy = tile[1].top - self.rect.bottom 
         
-        self.rect.x += dx
+        self.rect.x += dx + ai_settings.screen_scroll
         self.rect.y += dy
 
         self.timer -= 1
@@ -44,6 +56,7 @@ class Grenade(Sprite):
             for enemy in enemy_group:
                 if abs(self.rect.centerx - enemy.rect.centerx) < TILE_SIZE * 2 and abs(self.rect.centery - enemy.rect.centery) < TILE_SIZE * 2:
                     enemy.health -= 50
+       
 
 
 

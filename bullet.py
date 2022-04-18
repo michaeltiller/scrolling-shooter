@@ -11,10 +11,11 @@ class Bullet(Sprite):
         self.screen = screen
     
     def update(self, ai_settings):
-        self.rect.x += (self.direction * self.speed)
+        self.rect.x += (self.direction * self.speed) + ai_settings.screen_scroll
 
         if self.rect.right <0 or self.rect.left > ai_settings.screen_width:
             self.kill()
+       
 
         
 

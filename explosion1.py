@@ -16,7 +16,8 @@ class Explosion(Sprite):
         self.rect.center = (x, y)
         self.counter = 0
        
-    def update(self):
+    def update(self, ai_settings):
+        self.rect.x += ai_settings.screen_scroll
         explosion_speed = 4 
 
         self.counter +=1 
