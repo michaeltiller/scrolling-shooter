@@ -1,6 +1,7 @@
 import pygame 
 import explosion1
 from pygame.sprite import Sprite
+from pygame import mixer
 
 class Grenade(Sprite):
     def __init__(self, x, y, direction):
@@ -16,7 +17,7 @@ class Grenade(Sprite):
         self.height = self.image.get_height()
         self.direction = direction
     
-    def update(self, ai_settings, player, enemy_group, TILE_SIZE, world):
+    def update(self, ai_settings, player, enemy_group, TILE_SIZE, world, grenade_fx):
         gravity = 0.75
         self.vel_y += gravity
         dx = self.direction * self.speed
@@ -47,6 +48,7 @@ class Grenade(Sprite):
         self.timer -= 1
         if self.timer <=0:
             self.kill()
+            grenade_fx.play()
             explosion = explosion1.Explosion(self.rect.x, self.rect.y, 0.5)
             player.explosion_group.add(explosion)
 

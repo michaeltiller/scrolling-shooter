@@ -1,4 +1,5 @@
 
+from xml.etree.ElementTree import TreeBuilder
 import pygame
 from player import Soldier
 import game_functions as gf
@@ -10,9 +11,13 @@ import csv
 import sys
 import world1
 from grenade1 import Grenade
+from pygame import mixer 
+import screenfade
+
 
 def run_game():
     pygame.init()
+    mixer.init()
 
     
     ai_settings = Settings()
@@ -38,9 +43,24 @@ def run_game():
 
     start_button = button.Button(ai_settings.screen_width //2 - 130, ai_settings.screen_height // 2 - 150, start_img, 1)
     exit_button = button.Button(ai_settings.screen_width //2 - 110, ai_settings.screen_height // 2 + 50, exit_img, 1)
-    restart_button = button.Button(ai_settings.screen_width //2 - 110, ai_settings.screen_height // 2 + 50, restart_img, 1)
+    restart_button = button.Button(ai_settings.screen_width //2 - 100, ai_settings.screen_height // 2 - 50, restart_img, 2)
+
+    intro_fade = screenfade.ScreenFade(1, (0,0,0), 4 )
+    death_fade = screenfade.ScreenFade(2, (255, 192, 203), 4 )
     
+    pygame.mixer.music.load('audio/audio_music2.mp3')
+    pygame.mixer.music.set_volume(0.3)
+    pygame.mixer.music.play(-1, 0.0, 5000)
+    jump_fx = pygame.mixer.Sound('audio/audio_jump.wav')
+    jump_fx.set_volume(0.5)
+    shot_fx = pygame.mixer.Sound('audio/audio_shot.wav')
+    shot_fx.set_volume(0.5)
+    grenade_fx = pygame.mixer.Sound('audio/audio_grenade.wav')
+    grenade_fx.set_volume(0.5)
+
+
     start_game = False
+    start_intro = False
     
 
     
@@ -70,11 +90,12 @@ def run_game():
    
     while True:
         clock.tick(FPS)
-
+        
         if start_game == False:
             screen.fill(ai_settings.bg_color)
             if start_button.draw(screen):
                 start_game = True
+                start_intro = True
             if exit_button.draw(screen):
                 sys.exit()
             
@@ -88,6 +109,7 @@ def run_game():
             ai_settings.screen_scroll, level_complete = player.move(world, ai_settings, water_group, exit_group)
             ai_settings.bg_scroll -= ai_settings.screen_scroll
             if level_complete:
+                start_intro = True
                 ai_settings.level += 1
                 ai_settings.bg_scroll = 0 
                 world_data = gf.reset_level(enemy_group, player, item_box_group, decoration_group, water_group, exit_group, ai_settings)
@@ -102,11 +124,16 @@ def run_game():
                         
             
             world.draw(screen, ai_settings)
+            gf.update_screen(player, screen, ai_settings, enemy_group, item_box_group, world, water_group,exit_group, decoration_group, shot_fx, grenade_fx)
 
+            if start_intro == True:
+                if intro_fade.fade(screen, ai_settings):
+                    start_intro = False
+                    intro_fade.fade_counte = 0
 
             if player.alive:
                 if player.shoot:
-                    player.shoot_bullet()
+                    player.shoot_bullet(shot_fx)
                 elif player.grenade and player.grenade_thrown == False and player.grenades > 0:
                     grenade = Grenade(player.rect.centerx + (0.5 * player.rect.size[0] * player.direction), player.rect.top, player.direction)
                     player.grenade_group.add(grenade)
@@ -121,25 +148,28 @@ def run_game():
                     player.update_action(0)
             else:
                 ai_settings.screen_scroll = 0 
-                if restart_button.draw(screen):
-                    ai_settings.bg_scroll = 0 
-                    world_data = gf.reset_level(enemy_group, player, item_box_group, decoration_group, water_group, exit_group, ai_settings)
-                    with open(f'level{ai_settings.level}_data.csv', newline = '') as csvfile:
-                        reader = csv.reader(csvfile, delimiter = ',')
-                        for x, row in enumerate(reader):
-                            for y, tile in enumerate(row):
-                                world_data[x][y] = int(tile)
-                    world = world1.World()
-                    player, health_bar = world.process_data(world_data, img_list, ai_settings, screen, enemy_group, item_box_group, decoration_group, water_group, exit_group)
-                        
-                
+                if death_fade.fade(screen, ai_settings):
+                    if restart_button.draw(screen):
+                        death_fade.fade_counter = 0
+                        start_intro = True
+                        ai_settings.bg_scroll = 0 
+                        world_data = gf.reset_level(enemy_group, player, item_box_group, decoration_group, water_group, exit_group, ai_settings)
+                        with open(f'level{ai_settings.level}_data.csv', newline = '') as csvfile:
+                            reader = csv.reader(csvfile, delimiter = ',')
+                            for x, row in enumerate(reader):
+                                for y, tile in enumerate(row):
+                                    world_data[x][y] = int(tile)
+                        world = world1.World()
+                        player, health_bar = world.process_data(world_data, img_list, ai_settings, screen, enemy_group, item_box_group, decoration_group, water_group, exit_group)
+                            
+            
 
-        
+           
             gf.check_player_bullet_collision(player, enemy_group)
-            gf.update_screen(player, screen, ai_settings, enemy_group, item_box_group, world, water_group,exit_group, decoration_group )
             
             
-        gf.check_inputs(player)
+            
+        gf.check_inputs(player, jump_fx)
         pygame.display.update()
 
 run_game()

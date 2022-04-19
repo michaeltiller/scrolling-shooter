@@ -5,15 +5,15 @@ from grenade1 import Grenade
 import itemdrops
 import world1
 import csv
+from pygame import mixer
 
 
-def update_screen(soilder):
-    soilder.draw()
 
-def check_events(player, ai_settings, restart_button, screen, enemy_group, item_box_group, decoration_group, water_group, exit_group, img_list):
+
+def check_events(player, ai_settings, restart_button, screen, enemy_group, item_box_group, decoration_group, water_group, exit_group, img_list, shot_fx):
     if player.alive:
         if player.shoot:
-            player.shoot_bullet()
+            player.shoot_bullet(shot_fx)
         elif player.grenade and player.grenade_thrown == False and player.grenades > 0:
             grenade = Grenade(player.rect.centerx + (0.5 * player.rect.size[0] * player.direction), player.rect.top, player.direction)
             player.grenade_group.add(grenade)
@@ -42,7 +42,7 @@ def check_events(player, ai_settings, restart_button, screen, enemy_group, item_
         
         
     
-def check_inputs( player):
+def check_inputs(player, jump_fx):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit
@@ -54,6 +54,9 @@ def check_inputs( player):
                 player.moving_right = True 
             if event.key == pygame.K_w and player.alive:
                 player.jump = True 
+                jump_fx.play()
+
+
             if event.key == pygame.K_q :
                 player.grenade = True 
 
@@ -73,7 +76,7 @@ def check_inputs( player):
                 player.grenade = False
                 player.grenade_thrown = False
 
-def update_screen(player, screen, ai_settings, enemy_group, item_box_group, world, water_group, exit_group, decoration_group ):
+def update_screen(player, screen, ai_settings, enemy_group, item_box_group, world, water_group, exit_group, decoration_group, shot_fx, grenade_fx):
     
     player.draw()
     player.move_bullet()
@@ -81,9 +84,9 @@ def update_screen(player, screen, ai_settings, enemy_group, item_box_group, worl
     for enemy in enemy_group:
         enemy.draw()
         enemy.update()
-        enemy.ai(player, ai_settings.TILE_SIZE, world, ai_settings, water_group, exit_group)
+        enemy.ai(player, ai_settings.TILE_SIZE, world, ai_settings, water_group, exit_group, shot_fx)
         enemy.move_bullet()
-    player.grenade_group.update(ai_settings, player, enemy_group, ai_settings.TILE_SIZE, world)
+    player.grenade_group.update(ai_settings, player, enemy_group, ai_settings.TILE_SIZE, world, grenade_fx)
     player.grenade_group.draw(screen)
     player.explosion_group.update(ai_settings)
     player.explosion_group.draw(screen)

@@ -5,7 +5,7 @@ import bullet
 import pygame
 import os
 import random
-
+from pygame import mixer 
 
 class Soldier(Sprite):
     def __init__(self, char_type, x, y, scale, speed, screen, ai_settings, ammo, grenades):
@@ -148,12 +148,13 @@ class Soldier(Sprite):
                 
         return screen_scroll, level_complete
 
-    def shoot_bullet(self):
+    def shoot_bullet(self,shot_fx):
         if self.shoot_cooldown == 0 and self.ammo > 0:
             self.shoot_cooldown = 20
             bullet1 = bullet.Bullet(self.rect.centerx + (0.75 * self.rect.size[0] * self.direction), self.rect.centery, self.direction, self.screen)
             self.bullet_group.add(bullet1)
             self.ammo -= 1
+            shot_fx.play()
 
 
     def update_animation(self):
@@ -193,7 +194,7 @@ class Soldier(Sprite):
             bullet.draw_bullet()
    
     
-    def ai(self, player, TILE_SIZE, world, ai_settings, water_group, exit_group):
+    def ai(self, player, TILE_SIZE, world, ai_settings, water_group, exit_group, shot_fx):
         if self.alive and player.alive:
             if self.idling == False and random.randint(1, 200) ==1:
                 self.update_action(0)
@@ -203,7 +204,7 @@ class Soldier(Sprite):
             #check ai near the player 
             if self.vision.colliderect(player.rect):
                 self.update_action(0)
-                self.shoot_bullet()
+                self.shoot_bullet(shot_fx)
                 self.move_bullet()
             else:
 
